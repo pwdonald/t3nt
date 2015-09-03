@@ -9,13 +9,13 @@ var User = new Datastore({
 exports.FindById = function(id, callback) {
     User.findOne({
         _id: id
-    }, function(err, user) {
-        if (err) {
-            callback(err);
-        }
+    }, callback);
+};
 
-        callback(null, user);
-    });
+exports.findByUsername = function(username, callback) {
+    User.findOne({
+        username: username
+    }, callback);
 };
 
 exports.IsUsernameAvailable = function(req, res, next) {
@@ -44,34 +44,8 @@ exports.HashPassword = function(req, res, next) {
     });
 };
 
-exports.CheckPassword = function(username, password, callback) {
-    User.findOne({
-        username: username
-    }, function(err, user) {
-        if (err) {
-            return callback(err);
-        }
-
-        if (!user) {
-            return callback();
-        }
-
-        bcrypt.compare(password, user.password, function(err, res) {
-            if (err) {
-                return callback(err);
-            }
-
-            // if (!res) {
-            //     return callback(new Error('Password incorrect!'));
-            // }
-
-            if (!res) {
-                return callback(new Error('Incorrect password.'), user);
-            }
-
-            return callback(null, user);
-        })
-    });
+exports.CheckPassword = function(user, password, callback) {
+    bcrypt.compare(password, user.password, callback);
 };
 
 exports.CreateNewUser = function(req, res, next) {

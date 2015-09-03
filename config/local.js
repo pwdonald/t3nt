@@ -5,20 +5,30 @@ var passport = require('passport'),
 module.exports = function() {
     passport.use(new LocalStrategy(
         function(username, password, done) {
-            User.CheckPassword(username, password, function(err, user) {
+            User.findByUsername(username, function(err, user) {
+                if (err) {
+                    return done(err);
+                }
+
                 if (!user) {
                     return done(null, false, {
-                        message: 'Username not found.'
+                        message: 'Username not found!'
                     });
                 }
 
-                if (err) {
-                    return done(null, false, {
-                        message: 'Incorrect password.'
-                    });
-                }
+                User.CheckPassword(user, password, function(err, success) {
+                    if (err) {
+                        return done(err);
+                    }
 
-                return done(null, user, true);
+                    if (!success) {
+                        return done(null, false, {
+                            message: 'Incorrect credentials!'
+                        });
+                    }
+
+                    return done(null, user);
+                });
             });
         }
     ));
